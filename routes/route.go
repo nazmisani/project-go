@@ -45,23 +45,28 @@ func SetupRouter() *gin.Engine {
 	requestLimiter := rate.NewLimiter(1, 5)
 	r.Use(RateLimitMiddleware(requestLimiter))
 
-	// Auth Routes
+	// Public Auth Routes
 	r.POST("/register", controllers.Register)
 	r.POST("/login", controllers.Login)
-
-	r.Use(middleware.AuthMiddleware())
+	r.POST("/refresh", controllers.RefreshToken) // Endpoint untuk refresh token
+	
+	// Protected Routes (require valid JWT)
+	authRoutes := r.Group("/")
+	authRoutes.Use(middleware.AuthMiddleware())
+	
+	// Logout endpoint
+	authRoutes.POST("/logout", controllers.Logout)
+	
 	// User Routes
-	r.POST("/users", controllers.CreateUser)
-	r.GET("/users", controllers.GetUsers)
-	r.GET("/users/:id", controllers.GetUser)
-	r.PUT("/users/:id", controllers.UpdateUser)
-	r.DELETE("/users/:id", controllers.DeleteUser)
+	authRoutes.POST("/users", controllers.CreateUser)
+	authRoutes.GET("/users", controllers.GetUsers)
+	authRoutes.GET("/users/:id", controllers.GetUser)
+	authRoutes.PUT("/users/:id", controllers.UpdateUser)
+	authRoutes.DELETE("/users/:id", controllers.DeleteUser)
 
 	// Post Routes
-	r.POST("/posts", controllers.CreatePost)
-
-	
-	r.GET("/users/post", controllers.GetUsersWithPosts)
+	authRoutes.POST("/posts", controllers.CreatePost)
+	authRoutes.GET("/users/post", controllers.GetUsersWithPosts)
 
 	return r
 }
