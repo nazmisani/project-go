@@ -2,6 +2,7 @@ package routes
 
 import (
 	"final/controllers"
+	"final/middleware"
 	"log"
 	"net/http"
 	"time"
@@ -44,6 +45,11 @@ func SetupRouter() *gin.Engine {
 	requestLimiter := rate.NewLimiter(1, 5)
 	r.Use(RateLimitMiddleware(requestLimiter))
 
+	// Auth Routes
+	r.POST("/register", controllers.Register)
+	r.POST("/login", controllers.Login)
+
+	r.Use(middleware.AuthMiddleware())
 	// User Routes
 	r.POST("/users", controllers.CreateUser)
 	r.GET("/users", controllers.GetUsers)
