@@ -25,12 +25,13 @@ func CreatePost(c *gin.Context) {
 // Konfigurasi Cloudinary
 var cld, err = cloudinary.NewFromURL("cloudinary://API_KEY:API_SECRET@CLOUD_NAME")
 func init() {
-    if err != nil {
-        log.Fatal("Failed to initialize Cloudinary:", err)
-    }
+	if err != nil {
+		log.Fatal("Failed to initialize Cloudinary:", err)
+	}
 }
 
-func uploadToCloudinary(c *gin.Context) {
+// UploadToCloudinary handles file uploads to Cloudinary
+func UploadToCloudinary(c *gin.Context) {
 	// Ambil file dari request
 	file, err := c.FormFile("file")
 	if err != nil {
