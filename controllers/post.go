@@ -1,10 +1,14 @@
 package controllers
 
 import (
+	"context"
 	"final/config"
 	"final/models"
+	"log"
 	"net/http"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,4 +20,43 @@ func CreatePost(c *gin.Context) {
 	}
 	config.DB.Create(&post)
 	c.JSON(http.StatusOK, post)
+}
+
+// Konfigurasi Cloudinary
+var cld, err = cloudinary.NewFromURL("cloudinary://API_KEY:API_SECRET@CLOUD_NAME")
+func init() {
+    if err != nil {
+        log.Fatal("Failed to initialize Cloudinary:", err)
+    }
+}
+
+func uploadToCloudinary(c *gin.Context) {
+	// Ambil file dari request
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Gagal mendapatkan file"})
+		return
+	}
+
+	// Buka file untuk upload
+	src, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal membuka file"})
+		return
+	}
+	defer src.Close()
+
+	// Upload ke Cloudinary
+	uploadResult, err := cld.Upload.Upload(context.Background(), src, uploader.UploadParams{})
+	if err != nil {
+		log.Println("Upload error:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal upload ke Cloudinary"})
+		return
+	}
+
+	// Beri respon ke client
+	c.JSON(http.StatusOK, gin.H{
+		"message": "File berhasil diupload!",
+		"url":     uploadResult.SecureURL,
+	})
 }
