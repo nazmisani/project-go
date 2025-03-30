@@ -6,6 +6,7 @@ import (
 	"final/models"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
@@ -21,14 +22,13 @@ func CreatePost(c *gin.Context) {
 	config.DB.Create(&post)
 	c.JSON(http.StatusOK, post)
 }
-
 // Konfigurasi Cloudinary
-var cld, err = cloudinary.NewFromURL("cloudinary://API_KEY:API_SECRET@CLOUD_NAME")
+var cld, err = cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
 func init() {
 	if err != nil {
 		log.Fatal("Failed to initialize Cloudinary:", err)
 	}
-}
+}	
 
 // UploadToCloudinary handles file uploads to Cloudinary
 func UploadToCloudinary(c *gin.Context) {
