@@ -23,10 +23,22 @@ func CreatePost(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 // Konfigurasi Cloudinary
-var cld, err = cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
-func init() {
+var cld *cloudinary.Cloudinary
+
+// InitCloudinary initializes the Cloudinary client
+func InitCloudinary() {
+	cloudinaryURL := os.Getenv("CLOUDINARY_URL")
+	if cloudinaryURL == "" {
+		log.Println("Warning: CLOUDINARY_URL environment variable is not set")
+		return
+	}
+	
+	var err error
+	cld, err = cloudinary.NewFromURL(cloudinaryURL)
 	if err != nil {
-		log.Fatal("Failed to initialize Cloudinary:", err)
+		log.Println("Failed to initialize Cloudinary:", err)
+	} else {
+		log.Println("Cloudinary initialized successfully")
 	}
 }	
 

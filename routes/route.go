@@ -68,5 +68,8 @@ func SetupRouter() *gin.Engine {
 	authRoutes.POST("/posts", controllers.CreatePost)
 	authRoutes.GET("/users/post", controllers.GetUsersWithPosts)
 
+	// Upload Route
+	authRoutes.POST("/upload", controllers.UploadToCloudinary)
+
 	return r
 }
