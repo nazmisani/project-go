@@ -39,11 +39,15 @@ func RateLimitMiddleware(rateLimiter *rate.Limiter) gin.HandlerFunc {
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
+	// Middleware global
 	r.Use(LoggingMiddleware())
-
-	// Rate Limiter
-	requestLimiter := rate.NewLimiter(1, 5)
+	
+	// Rate Limiter - meningkatkan batas rate
+	requestLimiter := rate.NewLimiter(5, 10) // 5 request per detik dengan burst 10
 	r.Use(RateLimitMiddleware(requestLimiter))
+	
+	// Cache middleware untuk endpoint GET (30 detik)
+	r.Use(middleware.CacheMiddleware(30 * time.Second))
 
 	// Public Auth Routes
 	r.POST("/register", controllers.Register)
@@ -66,10 +70,19 @@ func SetupRouter() *gin.Engine {
 
 	// Post Routes
 	authRoutes.POST("/posts", controllers.CreatePost)
+	authRoutes.GET("/posts", controllers.GetPosts)
+	authRoutes.GET("/posts/:id", controllers.GetPost)
+	authRoutes.PUT("/posts/:id", controllers.UpdatePost)
+	authRoutes.DELETE("/posts/:id", controllers.DeletePost)
 	authRoutes.GET("/users/post", controllers.GetUsersWithPosts)
 
 	// Upload Route
 	authRoutes.POST("/upload", controllers.UploadToCloudinary)
+	
+	// Cache management route (admin only)
+	adminRoutes := r.Group("/admin")
+	adminRoutes.Use(middleware.AuthMiddleware())
+	adminRoutes.POST("/cache/clear", middleware.ClearCache())
 
 	return r
 }

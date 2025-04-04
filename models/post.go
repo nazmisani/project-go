@@ -1,8 +1,11 @@
 package models
 
+import "gorm.io/gorm"
+
 type Post struct {
-	ID     uint   `gorm:"primaryKey"`
-	Title  string `gorm:"not null"`
-	Body   string `gorm:"not null"`
-	UserID uint   `json:"user_id"`
+	gorm.Model       // Menambahkan ID, CreatedAt, UpdatedAt, DeletedAt
+	Title     string `gorm:"not null" json:"title"`
+	Body      string `gorm:"not null" json:"body"`
+	UserID    uint   `json:"user_id"`
+	User      User   `json:"user" gorm:"foreignKey:UserID"`
 }
