@@ -138,16 +138,7 @@ func (w *responseWriter) WriteString(s string) (int, error) {
 	return w.ResponseWriter.WriteString(s)
 }
 
-// ClearCache godoc
-// @Summary Clear all cache
-// @Description Clear all cached responses
-// @Tags admin
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Success 200 {object} map[string]string "Cache cleared successfully"
-// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid token"
-// @Router /admin/cache/clear [post]
+// ClearCache untuk menghapus semua cache
 func ClearCache() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
