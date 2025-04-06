@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"net/http"
+	"sort"
 	"sync"
 	"time"
 
@@ -23,6 +24,55 @@ func CacheMiddleware(expiration time.Duration) gin.HandlerFunc {
 	cache := make(map[string]cacheItem)
 	// Mutex untuk mengamankan akses ke cache
 	var mutex sync.Mutex
+	// Jumlah maksimum item dalam cache
+	maxCacheItems := 1000
+	// Interval pembersihan cache (5 menit)
+	cleanupInterval := 5 * time.Minute
+	
+	// Goroutine untuk membersihkan cache yang sudah kedaluwarsa
+	go func() {
+		for {
+			time.Sleep(cleanupInterval)
+			now := time.Now()
+			mutex.Lock()
+			
+			// Hapus item yang sudah kedaluwarsa
+			for k, v := range cache {
+				if now.After(v.Expiration) {
+					delete(cache, k)
+				}
+			}
+			
+			// Jika cache masih terlalu besar, hapus 20% item tertua
+			if len(cache) > maxCacheItems {
+				// Buat slice untuk menyimpan key dan waktu kedaluwarsa
+				items := make([]struct {
+					key string
+					exp time.Time
+				}, 0, len(cache))
+				
+				for k, v := range cache {
+					items = append(items, struct {
+						key string
+						exp time.Time
+					}{k, v.Expiration})
+				}
+				
+				// Urutkan berdasarkan waktu kedaluwarsa (tertua dulu)
+				sort.Slice(items, func(i, j int) bool {
+					return items[i].exp.Before(items[j].exp)
+				})
+				
+				// Hapus 20% item tertua
+				toRemove := len(cache) / 5
+				for i := 0; i < toRemove; i++ {
+					delete(cache, items[i].key)
+				}
+			}
+			
+			mutex.Unlock()
+		}
+	}()
 
 	return func(c *gin.Context) {
 		// Hanya cache untuk GET requests

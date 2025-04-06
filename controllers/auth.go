@@ -28,21 +28,47 @@ func Register(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": http.StatusBadRequest,
+			"error":  "Validasi gagal: " + err.Error(),
+		})
+		return
+	}
+
+	// Validasi tambahan untuk username
+	if len(input.Username) < 3 || len(input.Username) > 50 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": http.StatusBadRequest,
+			"error":  "Username harus antara 3-50 karakter",
+		})
 		return
 	}
 
 	// Validasi bahwa username/email belum digunakan
 	var existingUser models.User
-	if result := config.DB.Where("username = ? OR email = ?", input.Username, input.Email).First(&existingUser); result.Error == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Username atau email sudah digunakan"})
+	if result := config.DB.Where("username = ?", input.Username).First(&existingUser); result.Error == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": http.StatusBadRequest,
+			"error":  "Username sudah digunakan",
+		})
+		return
+	}
+
+	if result := config.DB.Where("email = ?", input.Email).First(&existingUser); result.Error == nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": http.StatusBadRequest,
+			"error":  "Email sudah digunakan",
+		})
 		return
 	}
 
 	// Hash password
 	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error hashing password"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status": http.StatusInternalServerError,
+			"error":  "Error hashing password: " + err.Error(),
+		})
 		return
 	}
 
@@ -51,15 +77,28 @@ func Register(c *gin.Context) {
 		Username: input.Username,
 		Email:    input.Email,
 		Password: hashedPassword,
+		Role:     "user", // Set default role
 	}
 
 	result := config.DB.Create(&user)
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status": http.StatusInternalServerError,
+			"error":  "Gagal membuat user: " + result.Error.Error(),
+		})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully", "userId": user.ID})
+	c.JSON(http.StatusCreated, gin.H{
+		"status":  http.StatusCreated,
+		"message": "User berhasil didaftarkan",
+		"data": gin.H{
+			"userId":   user.ID,
+			"username": user.Username,
+			"email":    user.Email,
+			"role":     user.Role,
+		},
+	})
 }
 
 // Login godoc

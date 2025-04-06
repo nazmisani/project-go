@@ -3,7 +3,6 @@ package main
 import (
 	database "final/config"
 	"final/controllers"
-	"final/models"
 	"final/routes"
 	"log"
 
@@ -44,9 +43,14 @@ func main() {
 
 	// Koneksi ke database
 	database.ConnectDatabase()
-	database.DB.AutoMigrate(&models.User{} ,&models.Post{}) // Migrate database
+	// Migrasi database sudah dilakukan di ConnectDatabase()
 
 	// Setup router
 	r := routes.SetupRouter()
-	r.Run(":8080") // Jalankan server di port 8080
+
+	// Jalankan server di port 8080
+	log.Println("Server berjalan di http://localhost:8080")
+	if err := r.Run(":8080"); err != nil {
+		log.Fatalf("Gagal menjalankan server: %v", err)
+	}
 }

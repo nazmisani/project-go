@@ -15,8 +15,27 @@ import (
 func AuthMiddleware() gin.HandlerFunc {
 	// Cache untuk menyimpan token yang valid (token -> username)
 	tokenCache := make(map[string]string)
+	// Cache untuk menyimpan token yang tidak valid (untuk rate limiting)
+	invalidTokens := make(map[string]time.Time)
 	// Mutex untuk mengamankan akses ke cache
 	var mutex sync.Mutex
+	// Cleanup interval untuk invalid tokens (10 menit)
+	cleanupInterval := 10 * time.Minute
+	
+	// Goroutine untuk membersihkan token tidak valid yang sudah lama
+	go func() {
+		for {
+			time.Sleep(cleanupInterval)
+			now := time.Now()
+			mutex.Lock()
+			for token, timestamp := range invalidTokens {
+				if now.Sub(timestamp) > cleanupInterval {
+					delete(invalidTokens, token)
+				}
+			}
+			mutex.Unlock()
+		}
+	}()
 	
 	return func(c *gin.Context) {
 		// Ambil token dari header
@@ -31,6 +50,20 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+		
+		// Cek apakah token ada di daftar invalid
+		mutex.Lock()
+		_, isInvalid := invalidTokens[tokenString]
+		mutex.Unlock()
+		
+		if isInvalid {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"status":  http.StatusUnauthorized,
+				"message": "Token tidak valid atau sudah kedaluwarsa",
+			})
+			c.Abort()
+			return
+		}
 		
 		// Cek cache terlebih dahulu
 		mutex.Lock()
@@ -47,6 +80,11 @@ func AuthMiddleware() gin.HandlerFunc {
 		// Token tidak ada di cache, validasi dengan JWT
 		claims, err := utils.ParseJWT(tokenString)
 		if err != nil {
+			// Tambahkan token ke daftar invalid
+			mutex.Lock()
+			invalidTokens[tokenString] = time.Now()
+			mutex.Unlock()
+			
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"status":  http.StatusUnauthorized,
 				"message": "Token tidak valid",
