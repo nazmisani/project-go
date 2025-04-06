@@ -9,7 +9,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Register endpoint
+// Register godoc
+// @Summary Register a new user
+// @Description Register a new user with username, email and password
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param user body docs.RegisterRequest true "User registration data"
+// @Success 201 {object} docs.UserResponse "User created successfully"
+// @Failure 400 {object} docs.ErrorResponse "Bad request - validation error or username/email already exists"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /register [post]
 func Register(c *gin.Context) {
 	var input struct {
 		Username string `json:"username" binding:"required"`
@@ -52,7 +62,18 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully", "userId": user.ID})
 }
 
-// Login endpoint
+// Login godoc
+// @Summary Login user
+// @Description Authenticate user and return JWT token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param user body docs.LoginRequest true "User login credentials"
+// @Success 200 {object} docs.TokenResponse "Login successful"
+// @Failure 400 {object} docs.ErrorResponse "Bad request - validation error"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid credentials"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /login [post]
 func Login(c *gin.Context) {
 	var input struct {
 		Username string `json:"username" binding:"required"`
@@ -91,7 +112,18 @@ func Login(c *gin.Context) {
 	})
 }
 
-// RefreshToken endpoint untuk memperbarui access token dengan refresh token
+// RefreshToken godoc
+// @Summary Refresh access token
+// @Description Generate new access token using refresh token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param refresh_token body string true "Refresh token" example("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+// @Success 200 {object} docs.TokenResponse "New tokens generated successfully"
+// @Failure 400 {object} docs.ErrorResponse "Bad request - invalid refresh token"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - expired or invalid token"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /refresh [post]
 func RefreshToken(c *gin.Context) {
 	var input struct {
 		RefreshToken string `json:"refresh_token" binding:"required"`
@@ -137,7 +169,17 @@ func RefreshToken(c *gin.Context) {
 	})
 }
 
-// Logout endpoint (optional, diperlukan jika mengimplementasi blacklist token)
+// Logout godoc
+// @Summary Logout user
+// @Description Invalidate user's refresh token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]string "Logout successful"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid token"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /logout [post]
 func Logout(c *gin.Context) {
 	// Di implementasi lengkap, kita akan menambahkan token ke blacklist
 	// Tapi untuk sekarang, kita hanya kembalikan sukses

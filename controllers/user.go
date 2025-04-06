@@ -8,7 +8,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Create User
+// CreateUser godoc
+// @Summary Create a new user
+// @Description Create a new user with provided data
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param user body models.User true "User data"
+// @Success 201 {object} models.User "User created successfully"
+// @Failure 400 {object} docs.ErrorResponse "Bad request - validation error"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid token"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /users [post]
 func CreateUser(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -25,7 +37,17 @@ func CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
-// Get All Users
+// GetUsers godoc
+// @Summary Get all users
+// @Description Get a list of all users
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} models.User "List of users"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid token"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /users [get]
 func GetUsers(c *gin.Context) {
 	var users []models.User
 	if err := database.DB.Find(&users).Error; err != nil {
@@ -35,7 +57,19 @@ func GetUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
-// Get Single User
+// GetUser godoc
+// @Summary Get a user by ID
+// @Description Get user details by user ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "User ID"
+// @Success 200 {object} models.User "User details"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid token"
+// @Failure 404 {object} docs.ErrorResponse "User not found"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /users/{id} [get]
 func GetUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
@@ -47,7 +81,21 @@ func GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// Update User
+// UpdateUser godoc
+// @Summary Update a user
+// @Description Update user details by user ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "User ID"
+// @Param user body models.User true "Updated user data"
+// @Success 200 {object} models.User "User updated successfully"
+// @Failure 400 {object} docs.ErrorResponse "Bad request - validation error"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid token"
+// @Failure 404 {object} docs.ErrorResponse "User not found"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /users/{id} [put]
 func UpdateUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
@@ -74,7 +122,19 @@ func UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// Delete User
+// DeleteUser godoc
+// @Summary Delete a user
+// @Description Delete a user by user ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "User ID"
+// @Success 200 {object} map[string]string "User deleted successfully"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid token"
+// @Failure 404 {object} docs.ErrorResponse "User not found"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /users/{id} [delete]
 func DeleteUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
@@ -94,6 +154,17 @@ func DeleteUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted"})
 }
 
+// GetUsersWithPosts godoc
+// @Summary Get all users with their posts
+// @Description Get a list of all users including their posts
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]interface{} "List of users with their posts"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid token"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /users/post [get]
 func GetUsersWithPosts(c *gin.Context) {
 	var users []models.User
 

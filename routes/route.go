@@ -8,7 +8,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"golang.org/x/time/rate"
+
+	_ "final/docs" // Import docs untuk Swagger
 )
 
 func LoggingMiddleware() gin.HandlerFunc {
@@ -48,6 +52,9 @@ func SetupRouter() *gin.Engine {
 	
 	// Cache middleware untuk endpoint GET (30 detik)
 	r.Use(middleware.CacheMiddleware(30 * time.Second))
+	
+	// Swagger documentation endpoint
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Public Auth Routes
 	r.POST("/register", controllers.Register)

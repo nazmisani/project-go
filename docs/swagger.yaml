@@ -1,0 +1,661 @@
+basePath: /
+definitions:
+  docs.ErrorResponse:
+    description: Error response payload
+    properties:
+      error:
+        example: Invalid credentials
+        type: string
+    type: object
+  docs.LoginRequest:
+    description: Login user request payload
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      password:
+        example: password123
+        type: string
+    type: object
+  docs.RegisterRequest:
+    description: Register user request payload
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      password:
+        example: password123
+        type: string
+      username:
+        example: johndoe
+        type: string
+    type: object
+  docs.TokenResponse:
+    description: Token response payload
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      refresh_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      token_type:
+        example: Bearer
+        type: string
+    type: object
+  docs.UserResponse:
+    description: User response payload
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      id:
+        example: 1
+        type: integer
+      role:
+        example: user
+        type: string
+      username:
+        example: johndoe
+        type: string
+    type: object
+  models.Post:
+    type: object
+  models.User:
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+    url: http://www.example.com/support
+  description: API untuk Final Project dengan fitur user dan post management
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Final Project API
+  version: "1.0"
+paths:
+  /admin/cache/clear:
+    post:
+      consumes:
+      - application/json
+      description: Clear all cached responses
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cache cleared successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Clear all cache
+      tags:
+      - admin
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token
+      parameters:
+      - description: User login credentials
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/docs.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            $ref: '#/definitions/docs.TokenResponse'
+        "400":
+          description: Bad request - validation error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "401":
+          description: Unauthorized - invalid credentials
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      summary: Login user
+      tags:
+      - auth
+  /logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidate user's refresh token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logout successful
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Logout user
+      tags:
+      - auth
+  /posts:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all posts with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of posts with pagination metadata
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all posts
+      tags:
+      - posts
+    post:
+      consumes:
+      - application/json
+      description: Create a new post with provided data
+      parameters:
+      - description: Post data
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/models.Post'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Post created successfully
+          schema:
+            $ref: '#/definitions/models.Post'
+        "400":
+          description: Bad request - validation error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new post
+      tags:
+      - posts
+  /posts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a post by post ID
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Post deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "404":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a post
+      tags:
+      - posts
+    get:
+      consumes:
+      - application/json
+      description: Get post details by post ID
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Post details
+          schema:
+            $ref: '#/definitions/models.Post'
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "404":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a post by ID
+      tags:
+      - posts
+    put:
+      consumes:
+      - application/json
+      description: Update post details by post ID
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated post data
+        in: body
+        name: post
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Post updated successfully
+          schema:
+            $ref: '#/definitions/models.Post'
+        "400":
+          description: Bad request - validation error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "404":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a post
+      tags:
+      - posts
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      description: Generate new access token using refresh token
+      parameters:
+      - description: Refresh token
+        example: '"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."'
+        in: body
+        name: refresh_token
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: New tokens generated successfully
+          schema:
+            $ref: '#/definitions/docs.TokenResponse'
+        "400":
+          description: Bad request - invalid refresh token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "401":
+          description: Unauthorized - expired or invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      summary: Refresh access token
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with username, email and password
+      parameters:
+      - description: User registration data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/docs.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+          schema:
+            $ref: '#/definitions/docs.UserResponse'
+        "400":
+          description: Bad request - validation error or username/email already exists
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - auth
+  /upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload an image file to Cloudinary cloud storage
+      parameters:
+      - description: Image file to upload (max 10MB)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: File uploaded successfully with URL and metadata
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request - invalid file
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Upload file to Cloudinary
+      tags:
+      - uploads
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with provided data
+      parameters:
+      - description: User data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad request - validation error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a user
+      tags:
+      - users
+    get:
+      consumes:
+      - application/json
+      description: Get user details by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User details
+          schema:
+            $ref: '#/definitions/models.User'
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a user by ID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update user details by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated user data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated successfully
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad request - validation error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a user
+      tags:
+      - users
+  /users/post:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all users including their posts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users with their posts
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/docs.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all users with their posts
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

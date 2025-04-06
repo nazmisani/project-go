@@ -17,6 +17,19 @@ import (
 	"gorm.io/gorm"
 )
 
+// CreatePost godoc
+// @Summary Create a new post
+// @Description Create a new post with provided data
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param post body models.Post true "Post data"
+// @Success 201 {object} models.Post "Post created successfully"
+// @Failure 400 {object} docs.ErrorResponse "Bad request - validation error"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid token"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /posts [post]
 func CreatePost(c *gin.Context) {
 	var post models.Post
 	if err := c.ShouldBindJSON(&post); err != nil {
@@ -100,7 +113,19 @@ func InitCloudinary() {
 	}
 }	
 
-// UploadToCloudinary handles file uploads to Cloudinary
+// UploadToCloudinary godoc
+// @Summary Upload file to Cloudinary
+// @Description Upload an image file to Cloudinary cloud storage
+// @Tags uploads
+// @Accept multipart/form-data
+// @Produce json
+// @Security BearerAuth
+// @Param file formData file true "Image file to upload (max 10MB)"
+// @Success 200 {object} map[string]interface{} "File uploaded successfully with URL and metadata"
+// @Failure 400 {object} docs.ErrorResponse "Bad request - invalid file"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid token"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /upload [post]
 func UploadToCloudinary(c *gin.Context) {
 	// Ambil file dari request
 	file, err := c.FormFile("file")
@@ -186,7 +211,19 @@ func UploadToCloudinary(c *gin.Context) {
 	})
 }
 
-// GetPosts mengambil semua post dengan pagination
+// GetPosts godoc
+// @Summary Get all posts
+// @Description Get a list of all posts with pagination
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Number of items per page" default(10)
+// @Success 200 {object} map[string]interface{} "List of posts with pagination metadata"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid token"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /posts [get]
 func GetPosts(c *gin.Context) {
 	var posts []models.Post
 	
@@ -226,7 +263,19 @@ func GetPosts(c *gin.Context) {
 	})
 }
 
-// GetPost mengambil post berdasarkan ID
+// GetPost godoc
+// @Summary Get a post by ID
+// @Description Get post details by post ID
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Post ID"
+// @Success 200 {object} models.Post "Post details"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid token"
+// @Failure 404 {object} docs.ErrorResponse "Post not found"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /posts/{id} [get]
 func GetPost(c *gin.Context) {
 	id := c.Param("id")
 	var post models.Post
@@ -257,7 +306,21 @@ func GetPost(c *gin.Context) {
 	})
 }
 
-// UpdatePost memperbarui post berdasarkan ID
+// UpdatePost godoc
+// @Summary Update a post
+// @Description Update post details by post ID
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Post ID"
+// @Param post body object true "Updated post data" schema(title=string,body=string)
+// @Success 200 {object} models.Post "Post updated successfully"
+// @Failure 400 {object} docs.ErrorResponse "Bad request - validation error"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid token"
+// @Failure 404 {object} docs.ErrorResponse "Post not found"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /posts/{id} [put]
 func UpdatePost(c *gin.Context) {
 	id := c.Param("id")
 	var post models.Post
@@ -329,7 +392,19 @@ func UpdatePost(c *gin.Context) {
 	})
 }
 
-// DeletePost menghapus post berdasarkan ID
+// DeletePost godoc
+// @Summary Delete a post
+// @Description Delete a post by post ID
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Post ID"
+// @Success 200 {object} map[string]string "Post deleted successfully"
+// @Failure 401 {object} docs.ErrorResponse "Unauthorized - invalid token"
+// @Failure 404 {object} docs.ErrorResponse "Post not found"
+// @Failure 500 {object} docs.ErrorResponse "Internal server error"
+// @Router /posts/{id} [delete]
 func DeletePost(c *gin.Context) {
 	id := c.Param("id")
 	var post models.Post
