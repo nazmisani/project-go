@@ -86,9 +86,10 @@ func SetupRouter() *gin.Engine {
 	// Upload Route
 	authRoutes.POST("/upload", controllers.UploadToCloudinary)
 	
-	// Cache management route (admin only)
+	// Cache management route (admin only) - tidak ditampilkan di Swagger
 	adminRoutes := r.Group("/admin")
 	adminRoutes.Use(middleware.AuthMiddleware())
+	// Gunakan endpoint ini tanpa dokumentasi Swagger
 	adminRoutes.POST("/cache/clear", middleware.ClearCache())
 
 	return r

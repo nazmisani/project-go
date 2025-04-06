@@ -10,11 +10,11 @@ definitions:
   docs.LoginRequest:
     description: Login user request payload
     properties:
-      email:
-        example: john@example.com
-        type: string
       password:
         example: password123
+        type: string
+      username:
+        example: johndoe
         type: string
     type: object
   docs.RegisterRequest:
@@ -36,11 +36,11 @@ definitions:
       access_token:
         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         type: string
+      expires_in:
+        example: 3600
+        type: integer
       refresh_token:
         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        type: string
-      token_type:
-        example: Bearer
         type: string
     type: object
   docs.UserResponse:
@@ -59,9 +59,60 @@ definitions:
         example: johndoe
         type: string
     type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
   models.Post:
+    properties:
+      body:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      title:
+        type: string
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: integer
     type: object
   models.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      id:
+        type: integer
+      password:
+        minLength: 8
+        type: string
+      posts:
+        items:
+          $ref: '#/definitions/models.Post'
+        type: array
+      role:
+        type: string
+      updatedAt:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
     type: object
 host: localhost:8080
 info:
@@ -77,29 +128,6 @@ info:
   title: Final Project API
   version: "1.0"
 paths:
-  /admin/cache/clear:
-    post:
-      consumes:
-      - application/json
-      description: Clear all cached responses
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Cache cleared successfully
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "401":
-          description: Unauthorized - invalid token
-          schema:
-            $ref: '#/definitions/docs.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Clear all cache
-      tags:
-      - admin
   /login:
     post:
       consumes:

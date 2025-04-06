@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"net/http"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -81,6 +82,12 @@ func CacheMiddleware(expiration time.Duration) gin.HandlerFunc {
 			return
 		}
 
+		// Jangan cache request Swagger atau file doc.json
+		if strings.Contains(c.Request.URL.Path, "/swagger/") || strings.Contains(c.Request.URL.Path, "doc.json") {
+			c.Next()
+			return
+		}
+
 		// Buat key cache dari URL dan header Authorization
 		auth := c.GetHeader("Authorization")
 		hashKey := sha256.Sum256([]byte(c.Request.URL.String() + auth))
@@ -139,6 +146,7 @@ func (w *responseWriter) WriteString(s string) (int, error) {
 }
 
 // ClearCache untuk menghapus semua cache
+// @exclude
 func ClearCache() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
