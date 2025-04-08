@@ -189,7 +189,7 @@ func RefreshToken(c *gin.Context) {
 
 	// Verifikasi user masih ada di database
 	var user models.User
-	if err := config.DB.Where("username = ?", username).First(&user).Error; err != nil {
+	if dbErr := config.DB.Where("username = ?", username).First(&user).Error; dbErr != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 		return
 	}
