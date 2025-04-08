@@ -5,6 +5,7 @@ import (
 	"final/controllers"
 	"final/routes"
 	"log"
+	"os"
 
 	_ "final/docs" // Import docs untuk Swagger
 
@@ -35,7 +36,17 @@ func main() {
 	// Load .env file
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("Error loading .env file:", err)
+		log.Println("Info: .env file tidak ditemukan. Pastikan environment variables sudah diatur di Railway")
+	}
+
+	// Periksa DATABASE_URL
+	if os.Getenv("DATABASE_URL") == "" {
+		log.Fatal("Error: DATABASE_URL tidak ditemukan. Silakan atur DATABASE_URL di Railway dashboard")
+	}
+
+	// Periksa CLOUDINARY_URL
+	if os.Getenv("CLOUDINARY_URL") == "" {
+		log.Fatal("Error: CLOUDINARY_URL tidak ditemukan. Silakan atur CLOUDINARY_URL di Railway dashboard")
 	}
 
 	// Inisialisasi Cloudinary
