@@ -31,8 +31,33 @@ import (
 // @Failure 500 {object} docs.ErrorResponse "Internal server error"
 // @Router /posts [post]
 func CreatePost(c *gin.Context) {
-	var post models.Post
-	if err := c.ShouldBindJSON(&post); err != nil {
+	// Ambil username dari context yang sudah diset oleh middleware auth
+	username, exists := c.Get("username")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"status":  http.StatusUnauthorized,
+			"message": "User tidak terautentikasi",
+		})
+		return
+	}
+
+	// Ambil data user dari database berdasarkan username
+	var user models.User
+	if err := config.DB.Where("username = ?", username).First(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "Gagal mendapatkan data user",
+		})
+		return
+	}
+
+	// Bind input JSON ke struct
+	var input struct {
+		Title string `json:"title" binding:"required"`
+		Body  string `json:"body" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": "Validasi gagal",
@@ -40,42 +65,14 @@ func CreatePost(c *gin.Context) {
 		})
 		return
 	}
-	
-	// Validasi data post
-	if post.Title == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  http.StatusBadRequest,
-			"message": "Judul post tidak boleh kosong",
-		})
-		return
+
+	// Buat post baru dengan UserID dari user yang terautentikasi
+	post := models.Post{
+		Title:  input.Title,
+		Body:   input.Body,
+		UserID: user.ID,
 	}
-	
-	if post.Body == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  http.StatusBadRequest,
-			"message": "Isi post tidak boleh kosong",
-		})
-		return
-	}
-	
-	if post.UserID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  http.StatusBadRequest,
-			"message": "UserID tidak boleh kosong",
-		})
-		return
-	}
-	
-	// Cek apakah user ada
-	var user models.User
-	if err := config.DB.First(&user, post.UserID).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  http.StatusBadRequest,
-			"message": "User tidak ditemukan",
-		})
-		return
-	}
-	
+
 	// Simpan post ke database
 	result := config.DB.Create(&post)
 	if result.Error != nil {
@@ -86,7 +83,7 @@ func CreatePost(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusCreated, gin.H{
 		"status":  http.StatusCreated,
 		"message": "Post berhasil dibuat",
