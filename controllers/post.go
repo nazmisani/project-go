@@ -51,13 +51,9 @@ func CreatePost(c *gin.Context) {
 		return
 	}
 
-	// Bind input JSON ke struct
-	var input struct {
-		Title string `json:"title" binding:"required"`
-		Body  string `json:"body" binding:"required"`
-	}
-
-	if err := c.ShouldBindJSON(&input); err != nil {
+	// Bind input JSON ke struct Post
+	var post models.Post
+	if err := c.ShouldBindJSON(&post); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": "Validasi gagal",
@@ -66,12 +62,10 @@ func CreatePost(c *gin.Context) {
 		return
 	}
 
-	// Buat post baru dengan UserID dari user yang terautentikasi
-	post := models.Post{
-		Title:  input.Title,
-		Body:   input.Body,
-		UserID: user.ID,
-	}
+	// Set UserID dari user yang terautentikasi
+	post.UserID = user.ID
+	// Hapus data user yang mungkin ada di request body
+	post.User = models.User{}
 
 	// Simpan post ke database
 	result := config.DB.Create(&post)
