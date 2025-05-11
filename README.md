@@ -117,12 +117,6 @@ This project has been an incredible journey into the world of Go. I've particula
 
 > "Go is not meant to innovate programming theory. It's meant to innovate programming practice." - Rob Pike
 
-## 📜 License
-
-This personal learning project is available under the MIT License.
-
----
-
 <div align="center">
   <p>Happy Coding! 💻</p>
   <p>Made with ❤️ and lots of ☕</p>
