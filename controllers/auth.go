@@ -9,17 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Register godoc
-// @Summary Register a new user
-// @Description Register a new user with username, email and password
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Param user body docs.RegisterRequest true "User registration data"
-// @Success 201 {object} docs.UserResponse "User created successfully"
-// @Failure 400 {object} docs.ErrorResponse "Bad request - validation error or username/email already exists"
-// @Failure 500 {object} docs.ErrorResponse "Internal server error"
-// @Router /register [post]
 func Register(c *gin.Context) {
 	var input struct {
 		Username string `json:"username" binding:"required"`
@@ -35,7 +24,6 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// Validasi tambahan untuk username
 	if len(input.Username) < 3 || len(input.Username) > 50 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": http.StatusBadRequest,
@@ -44,7 +32,6 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// Validasi bahwa username/email belum digunakan
 	var existingUser models.User
 	if result := config.DB.Where("username = ?", input.Username).First(&existingUser); result.Error == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
